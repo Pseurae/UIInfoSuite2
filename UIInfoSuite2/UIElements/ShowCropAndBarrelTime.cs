@@ -18,7 +18,7 @@ namespace UIInfoSuite2.UIElements
 {
     internal class ShowCropAndBarrelTime : IDisposable
     {
-        private readonly Dictionary<int, string> _indexOfCropNames = new();
+        private readonly Dictionary<int, string> _indexOfItemNames = new();
         private readonly PerScreen<StardewValley.Object> _currentTile = new();
         private readonly PerScreen<TerrainFeature> _terrain = new();
         private readonly PerScreen<Building> _currentTileBuilding = new();
@@ -277,6 +277,24 @@ namespace UIInfoSuite2.UIElements
                                 Game1.smallFont, overrideX: overrideX, overrideY: overrideY);
                         }
                     }
+                    else
+                    {
+                        string? fertilizerName = GetFertilizerName(hoeDirt.fertilizer.Value);
+                        if (!String.IsNullOrEmpty(fertilizerName))
+                        {
+                            if (Game1.options.gamepadControls && Game1.timerUntilMouseFade <= 0)
+                            {
+                                var tilePosition = Utility.ModifyCoordinatesForUIScale(Game1.GlobalToLocal(new Vector2(terrain.currentTileLocation.X, terrain.currentTileLocation.Y) * Game1.tileSize));
+                                overrideX = (int)(tilePosition.X + Utility.ModifyCoordinateForUIScale(32));
+                                overrideY = (int)(tilePosition.Y + Utility.ModifyCoordinateForUIScale(32));
+                            }
+
+                            IClickableMenu.drawHoverText(
+                                Game1.spriteBatch,
+                                fertilizerName,
+                                Game1.smallFont, overrideX: overrideX, overrideY: overrideY);
+                        }
+                    }
                 }
                 else if (terrain is FruitTree)
                 {
@@ -331,14 +349,28 @@ namespace UIInfoSuite2.UIElements
             }
         }
 
+        string? GetFertilizerName(int itemId)
+        {
+            if (itemId == 0)
+                return "No Fertilizer";
+
+            if (!_indexOfItemNames.TryGetValue(itemId, out string? fertilizerName))
+            {
+                fertilizerName = new StardewValley.Object(itemId, 1).DisplayName;
+                _indexOfItemNames.Add(itemId, fertilizerName);
+            }
+
+            return fertilizerName;
+        }
+
         string? GetCropHarvestName(Crop crop)
         {
             if (crop.indexOfHarvest.Value > 0)
             {
                 int itemId = crop.isWildSeedCrop() ? crop.whichForageCrop.Value : crop.indexOfHarvest.Value;
-                if (!_indexOfCropNames.TryGetValue(itemId, out string? harvestName)) {
+                if (!_indexOfItemNames.TryGetValue(itemId, out string? harvestName)) {
                     harvestName = new StardewValley.Object(itemId, 1).DisplayName;
-                    _indexOfCropNames.Add(itemId, harvestName);
+                    _indexOfItemNames.Add(itemId, harvestName);
                 }
                 return harvestName;
             }
