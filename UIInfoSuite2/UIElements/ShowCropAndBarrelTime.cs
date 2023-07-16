@@ -24,6 +24,19 @@ namespace UIInfoSuite2.UIElements
         private readonly PerScreen<Building> _currentTileBuilding = new();
         private readonly IModHelper _helper;
 
+        private readonly string[] _treeNames = {
+            "",
+            "Oak Tree",
+            "Maple Tree",
+            "Pine Tree",
+            "Winter Tree",
+            "Winter Tree",
+            "Palm Tree",
+            "Mushroom Tree",
+            "Mahogany Tree",
+            "Palm Tree"
+        };
+
         private readonly Dictionary<string, string> _indexOfDgaCropNames = new();
 
         public ShowCropAndBarrelTime(IModHelper helper)
@@ -279,20 +292,23 @@ namespace UIInfoSuite2.UIElements
                     }
                     else
                     {
-                        string? fertilizerName = GetFertilizerName(hoeDirt.fertilizer.Value);
-                        if (!String.IsNullOrEmpty(fertilizerName))
+                        if (hoeDirt.fertilizer.Value != 0)
                         {
-                            if (Game1.options.gamepadControls && Game1.timerUntilMouseFade <= 0)
+                            string? fertilizerName = GetFertilizerName(hoeDirt.fertilizer.Value);
+                            if (!String.IsNullOrEmpty(fertilizerName))
                             {
-                                var tilePosition = Utility.ModifyCoordinatesForUIScale(Game1.GlobalToLocal(new Vector2(terrain.currentTileLocation.X, terrain.currentTileLocation.Y) * Game1.tileSize));
-                                overrideX = (int)(tilePosition.X + Utility.ModifyCoordinateForUIScale(32));
-                                overrideY = (int)(tilePosition.Y + Utility.ModifyCoordinateForUIScale(32));
-                            }
+                                if (Game1.options.gamepadControls && Game1.timerUntilMouseFade <= 0)
+                                {
+                                    var tilePosition = Utility.ModifyCoordinatesForUIScale(Game1.GlobalToLocal(new Vector2(terrain.currentTileLocation.X, terrain.currentTileLocation.Y) * Game1.tileSize));
+                                    overrideX = (int)(tilePosition.X + Utility.ModifyCoordinateForUIScale(32));
+                                    overrideY = (int)(tilePosition.Y + Utility.ModifyCoordinateForUIScale(32));
+                                }
 
-                            IClickableMenu.drawHoverText(
-                                Game1.spriteBatch,
-                                fertilizerName,
-                                Game1.smallFont, overrideX: overrideX, overrideY: overrideY);
+                                IClickableMenu.drawHoverText(
+                                    Game1.spriteBatch,
+                                    fertilizerName,
+                                    Game1.smallFont, overrideX: overrideX, overrideY: overrideY);
+                            }
                         }
                     }
                 }
@@ -346,14 +362,34 @@ namespace UIInfoSuite2.UIElements
                         }
                     }
                 }
+                else if (terrain is Tree)
+                {
+                    Tree tree = (terrain as Tree)!;
+                    if (tree.growthStage.Value < 5)
+                    {
+                        string treeName = _treeNames[tree.treeType.Value];
+
+                        if (!String.IsNullOrEmpty(treeName))
+                        {
+                            if (Game1.options.gamepadControls && Game1.timerUntilMouseFade <= 0)
+                            {
+                                var tilePosition = Utility.ModifyCoordinatesForUIScale(Game1.GlobalToLocal(new Vector2(terrain.currentTileLocation.X, terrain.currentTileLocation.Y) * Game1.tileSize));
+                                overrideX = (int)(tilePosition.X + Utility.ModifyCoordinateForUIScale(32));
+                                overrideY = (int)(tilePosition.Y + Utility.ModifyCoordinateForUIScale(32));
+                            }
+
+                            IClickableMenu.drawHoverText(
+                                Game1.spriteBatch,
+                                treeName,
+                                Game1.smallFont, overrideX: overrideX, overrideY: overrideY);
+                        }
+                    }
+                }
             }
         }
 
         string? GetFertilizerName(int itemId)
         {
-            if (itemId == 0)
-                return "No Fertilizer";
-
             if (!_indexOfItemNames.TryGetValue(itemId, out string? fertilizerName))
             {
                 fertilizerName = new StardewValley.Object(itemId, 1).DisplayName;
